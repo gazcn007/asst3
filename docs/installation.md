@@ -19,10 +19,10 @@ Open your terminal (or PowerShell on Windows) and clone the repository. We recom
 
 ```bash
 # Clone the repository
-git clone https://github.com/stanford-cs248/cs248a-renderer-internal.git
+git clone git@github.com:stanford-cs248/asst3.git
 
 # Enter the directory
-cd cs248a-renderer-internal
+cd asst3
 
 # Initialize submodules
 git submodule update --init --recursive
