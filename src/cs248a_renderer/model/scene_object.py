@@ -31,9 +31,11 @@ class SceneObject:
         :return: The 4x4 world transform matrix.
         """
         # TODO: Student implementation starts here.
+        mat = glm.mat4(1.0)
+        if self.parent is not None:
+            mat *= self.parent.transform.get_matrix()
 
-        return self.transform.get_matrix()
-
+        return mat * self.transform.get_matrix()
         # TODO: Student implementation ends here.
 
     def desc(self, depth: int = 0) -> str:

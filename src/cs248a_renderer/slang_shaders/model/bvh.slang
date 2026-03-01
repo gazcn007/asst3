@@ -95,7 +95,55 @@ public struct BVH<T>
         HitStack<64> stack;
 
         // TODO: Student implementation starts here.
+        stack.push(0);
+        uint currentIndex;
+        BVHNode currentNode;
+        T primitive;
+        Optional<RayHitResult> rayHitResult;
+        Optional<RayHitResult> closestRayHitResult;
+        T closestPrimitive;
+    
 
+        while (stack.size() > 0) {
+            currentIndex = stack.pop();
+            currentNode = nodes[currentIndex];
+            
+            // Check if this is a leaf node
+            if (currentNode.left == -1 && currentNode.right == -1) {
+                for (uint i = currentNode.primLeft; i < currentNode.primRight; i++) {
+                    rayHitResult = primitives[i].hit(ray);
+                    if (rayHitResult.hasValue) {
+                        if (!closestRayHitResult.hasValue || rayHitResult.value.t < closestRayHitResult.value.t) {
+                            closestRayHitResult = rayHitResult;
+                            closestPrimitive = primitives[i];
+                        }
+                    }
+                }
+            }
+            else {
+                // Internal node
+                float2 leftNodeHit = nodes[currentNode.left].bound.hit(ray);
+                float2 rightNodeHit = nodes[currentNode.right].bound.hit(ray);
+
+                bool leftHits = (leftNodeHit.x != -1.0);
+                bool rightHits = (rightNodeHit.x != -1.0);
+
+                if (leftHits && rightHits) {
+                    uint first = (leftNodeHit.x <= rightNodeHit.x) ? currentNode.left : currentNode.right;
+                    uint second = (leftNodeHit.x <= rightNodeHit.x) ? currentNode.right : currentNode.left;
+                    stack.push(second);
+                    stack.push(first);
+                } else if (leftHits) {
+                    stack.push(currentNode.left);
+                } else if (rightHits) {
+                    stack.push(currentNode.right);
+                }
+            }
+        }
+
+        if (closestRayHitResult.hasValue) {
+            hitResult = Optional<HitResult>(HitResult(closestPrimitive, closestRayHitResult.value));
+        }
         // TODO: Student implementation ends here.
 
         return hitResult;

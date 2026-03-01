@@ -33,9 +33,20 @@ public struct Triangle : IBoundingBox, IRayCastable
         float v = 0.0;
         float w = 0.0;
 
-        // TODO: Student implementation starts here.
 
-        // TODO: Student implementation ends here.
+        float3 a = vertices[0];
+        float3 b = vertices[1];
+        float3 c = vertices[2];
+
+        float3 ab = b - a;
+        float3 ap = p - a;
+        float3 ac = c - a;
+
+        float3 abc = cross(ab, ac);
+
+        w = length(cross(ab, ap)) / (length(abc) + EPSILON);
+        v = length(cross(ac, ap)) / (length(abc) + EPSILON);
+        u = 1.0 - v - w;
 
         return float3(u, v, w);
     }
@@ -48,7 +59,7 @@ public struct Triangle : IBoundingBox, IRayCastable
         float v = barycentricCoord.y;
         float w = barycentricCoord.z;
         uv = u * this.uvs[0] + v * this.uvs[1] + w * this.uvs[2];
-
+        
         return uv;
     }
 
@@ -70,18 +81,51 @@ public struct Triangle : IBoundingBox, IRayCastable
         return normalize(normal);
     }
 
-    /**
-     * Test ray-triangle intersection.
-     * @param ray The ray to test against the triangle.
-     * @return An Optional containing RayHitResult if the ray hits the triangle, otherwise an empty Optional.
-     */
+
     public Optional<RayHitResult> hit(Ray ray)
     {
-        // TODO: Student implementation starts here.
-
-        return Optional<RayHitResult>();
-
-        // TODO: Student implementation ends here.
+        const float EPSILON = 1e-6;
+        
+        
+        float3 edge1 = vertices[1] - vertices[0];
+        float3 edge2 = vertices[2] - vertices[0];
+        
+        float3 h = cross(ray.direction, edge2);
+        float a = dot(edge1, h);
+        
+        // Check if ray is parallel to triangle
+        if (abs(a) < EPSILON) {
+            return Optional<RayHitResult>();
+        }
+        
+        float f = 1.0 / a;
+        float3 s = ray.origin - vertices[0];
+        float u = f * dot(s, h);
+        
+        
+        if (u < -EPSILON || u > 1.0 + EPSILON) {
+            return Optional<RayHitResult>();
+        }
+        
+        float3 q = cross(s, edge1);
+        float v = f * dot(ray.direction, q);
+        
+        
+        if (v < -EPSILON || u + v > 1.0 + EPSILON) {
+            return Optional<RayHitResult>();
+        }
+        
+        
+        float t = f * dot(edge2, q);
+        
+        if (t < ray.tRange[0] || t > ray.tRange[1]) {
+            return Optional<RayHitResult>();
+        }
+        
+        RayHitResult result;
+        result.t = t;
+        result.normal = normalize(cross(edge1, edge2));
+        return result;
     }
 
     public uint getMaterialId()

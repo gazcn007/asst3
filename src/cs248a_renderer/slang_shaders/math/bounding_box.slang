@@ -37,14 +37,21 @@ public struct BoundingBox
 
     public float2 hit(Ray ray)
     {
-        float tNear = 0.0;
-        float tFar = 0.0;
-
         // TODO: Student implementation starts here.
+        float3 alpha = float3(1) / ray.direction;
+        float3 beta = - ray.origin / ray.direction;
+        float3 t_0 = alpha * pMin + beta;
+        float3 t_1 = alpha * pMax + beta;
+        float3 t_min = min(t_0, t_1);
+        float3 t_max = max(t_0, t_1);
+        float t_enter = max(max(t_min.x, t_min.y), t_min.z);
+        float t_exit = min(min(t_max.x, t_max.y), t_max.z);
+        if (t_enter < t_exit && t_exit >= 0) {
+            return float2(t_enter, t_exit);
+        }
+        return float2(-1.0, -1.0);
 
         // TODO: Student implementation ends here.
-
-        return float2(tNear, tFar);
     }
 };
 

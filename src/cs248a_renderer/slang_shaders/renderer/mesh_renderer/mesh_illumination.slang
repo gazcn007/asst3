@@ -31,7 +31,9 @@ public Ray getShadowRay(LightSample lightSample, float3 hitPoint)
     Ray shadowRay = Ray(float3(0.0), float3(0.0), float2(EPSILON, lightSample.lightDistance - EPSILON));
 
     // TODO: Student implementation starts here.
-
+    shadowRay.origin = hitPoint + lightSample.lightDirection * EPSILON; // check self-intersection
+    shadowRay.direction = lightSample.lightDirection;
+    
     // TODO: Student implementation ends here.
 
     return shadowRay;
@@ -44,11 +46,18 @@ public bool isLightOccluded(LightSample lightSample, float3 hitPoint, RendererUn
     // TODO: Student implementation starts here.
 
     // Step 1: Generate the shadow ray
+    Ray shadowRay = getShadowRay(lightSample, hitPoint);
 
     // Step 2: Check if the shadow ray intersects with any rectangular light or mesh.
     // HINT: Check the modified signature of `rayMeshIntersection` function in ray_mesh_intersection.slang.
     // Can you modify it to make it faster for this particular use case?
     // Also, make use of `rayRectangularLightIntersection` function. Check its usage in `mesh_renderer.slang`.
+    Optional<RectangularLight.LightHitResult> rayRectangularLightIntersectionResult = rayRectangularLightIntersection(shadowRay, uniforms);
+    Optional<RayMeshIntersectionResult> rayMeshIntersectionResult = rayMeshIntersection(shadowRay, uniforms);
+    if (rayRectangularLightIntersectionResult.hasValue || rayMeshIntersectionResult.hasValue)
+    {
+        occluded = true;
+    }
 
     // TODO: Student implementation ends here.
 
@@ -99,6 +108,7 @@ public float3 evaluatePointLightContribution(StructuredBuffer<PointLight> pointL
         // TODO: Student implementation starts here.
 
         // Calculate the fall off factor for point light.
+        fallOffFactor = lightSample.lightDistance * lightSample.lightDistance;
 
         // TODO: Student implementation ends here.
 
