@@ -39,7 +39,21 @@ public struct RectangularLight
         float pdf = 1.0;
 
         // TODO: Student implementation starts here.
+        // 1. Calculate the vector from the hitPoint to the light
+        float3 toLight = pointOnLight - hitPoint;
 
+        // 2. Calculate cosTheta at the LIGHT source. 
+        // We use the light's normal and the vector pointing BACK to the hitPoint (-L)
+        float cosThetaLight = abs(dot(this.normal, normalize(toLight)));
+
+        // 3. Prevent division by zero if the light is facing away or edge-on
+        if (cosThetaLight < EPSILON)
+        {
+            return 0.0f;
+        }
+
+        // 4. PDF conversion: p(w) = dist^2 / (Area * cosThetaLight)
+        pdf = dot(toLight, toLight) / (this.area * cosThetaLight);
         // TODO: Student implementation ends here.
 
         return pdf;

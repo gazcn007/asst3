@@ -71,7 +71,31 @@ class MaterialField[T]:
         textures = [base_texture]
 
         # TODO: Student implementation starts here.
-
+        current_texture = base_texture
+        for level in range(1, self.MAX_MIP_LEVELS):
+            height, width = current_texture.shape[:2]
+            if height == 1 and width == 1:
+                break
+            
+            # Calculate new dimensions (halve them, rounding up)
+            new_height = max(1, height // 2)
+            new_width = max(1, width // 2)
+            
+            # Resize using numpy (bilinear interpolation)
+            # np.kron is a simple way to do up/downsampling for images
+            # For downsampling, we can use stride-based averaging or scipy.ndimage.zoom
+            # Let's use a simple stride-based approach for 2x2 blocks
+            
+            # Reshape to (new_h, 2, new_w, 2, C) and average
+            downsampled = current_texture[:new_height*2, :new_width*2, :]
+            downsampled = downsampled.reshape(new_height, 2, new_width, 2, -1)
+            downsampled = np.mean(downsampled, axis=(1, 3))
+            
+            # Ensure float32
+            downsampled = downsampled.astype(np.float32)
+            
+            textures.append(downsampled)
+            current_texture = downsampled
         # TODO: Student implementation ends here.
 
         self.textures = textures

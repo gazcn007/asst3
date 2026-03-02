@@ -52,11 +52,11 @@ public bool isLightOccluded(LightSample lightSample, float3 hitPoint, RendererUn
     // HINT: Check the modified signature of `rayMeshIntersection` function in ray_mesh_intersection.slang.
     // Can you modify it to make it faster for this particular use case?
     // Also, make use of `rayRectangularLightIntersection` function. Check its usage in `mesh_renderer.slang`.
-    Optional<RectangularLight.LightHitResult> rayRectangularLightIntersectionResult = rayRectangularLightIntersection(shadowRay, uniforms);
     Optional<RayMeshIntersectionResult> rayMeshIntersectionResult = rayMeshIntersection(shadowRay, uniforms);
-    if (rayRectangularLightIntersectionResult.hasValue || rayMeshIntersectionResult.hasValue)
+    
+    if (rayMeshIntersectionResult.hasValue)
     {
-        occluded = true;
+        occluded = rayMeshIntersectionResult.value.closestHit.t < lightSample.lightDistance;
     }
 
     // TODO: Student implementation ends here.
