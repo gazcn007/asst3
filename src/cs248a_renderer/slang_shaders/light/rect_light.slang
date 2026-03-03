@@ -44,10 +44,10 @@ public struct RectangularLight
 
         // 2. Calculate cosTheta at the LIGHT source. 
         // We use the light's normal and the vector pointing BACK to the hitPoint (-L)
-        float cosThetaLight = abs(dot(this.normal, normalize(toLight)));
+        float cosThetaLight = dot(this.normal, normalize(-toLight));
 
         // 3. Prevent division by zero if the light is facing away or edge-on
-        if (cosThetaLight < EPSILON)
+        if (cosThetaLight <= EPSILON)
         {
             return 0.0f;
         }

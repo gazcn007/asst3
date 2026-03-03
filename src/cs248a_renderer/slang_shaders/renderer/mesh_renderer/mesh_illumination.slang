@@ -31,9 +31,8 @@ public Ray getShadowRay(LightSample lightSample, float3 hitPoint)
     Ray shadowRay = Ray(float3(0.0), float3(0.0), float2(EPSILON, lightSample.lightDistance - EPSILON));
 
     // TODO: Student implementation starts here.
-    shadowRay.origin = hitPoint + lightSample.lightDirection * EPSILON; // check self-intersection
+    shadowRay.origin = hitPoint;
     shadowRay.direction = lightSample.lightDirection;
-    
     // TODO: Student implementation ends here.
 
     return shadowRay;
@@ -48,15 +47,21 @@ public bool isLightOccluded(LightSample lightSample, float3 hitPoint, RendererUn
     // Step 1: Generate the shadow ray
     Ray shadowRay = getShadowRay(lightSample, hitPoint);
 
+    if (lightSample.pdf <= 1e-6) {
+        return true;
+    }
+
     // Step 2: Check if the shadow ray intersects with any rectangular light or mesh.
-    // HINT: Check the modified signature of `rayMeshIntersection` function in ray_mesh_intersection.slang.
-    // Can you modify it to make it faster for this particular use case?
-    // Also, make use of `rayRectangularLightIntersection` function. Check its usage in `mesh_renderer.slang`.
-    Optional<RayMeshIntersectionResult> rayMeshIntersectionResult = rayMeshIntersection(shadowRay, uniforms);
-    
-    if (rayMeshIntersectionResult.hasValue)
+    Optional<RayMeshIntersectionResult> meshHit = rayMeshIntersection(shadowRay, uniforms, true);
+    if (meshHit.hasValue)
     {
-        occluded = rayMeshIntersectionResult.value.closestHit.t < lightSample.lightDistance;
+        occluded = true;
+    }
+
+    Optional<RectangularLight.LightHitResult> lightHit = rayRectangularLightIntersection(shadowRay, uniforms);
+    if (lightHit.hasValue)
+    {
+        occluded = true;
     }
 
     // TODO: Student implementation ends here.
